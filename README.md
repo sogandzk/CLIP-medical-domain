@@ -1,0 +1,1 @@
+# CLIP-medical-domain
