@@ -1,2 +1,1 @@
 # CLIP-medical-domain
-Hello
