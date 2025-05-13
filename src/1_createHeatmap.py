@@ -1,3 +1,5 @@
+print("Importing libs")
+
 import os
 import sys
 import random
@@ -64,17 +66,19 @@ output_dir = sys.argv[3]
 
 dataset = NIHSingleLabelBBoxDataset(
     csv_path = data_dir + '/BBox_List_2017.csv',
-    images_dir = data_dir + '/main_images'
+    images_dir = data_dir + '/images'
 )
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+print("Processing")
+
 model, preprocess = clip.load("ViT-B/32", device=device, download_root=data_dir)
 model.load_state_dict(torch.load(data_dir+"/clip-imp-pretrained_128_6_after_4.pt", map_location=device))
 model = ClipWrapper(model)
-processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-tokenizer = CLIPTokenizerFast.from_pretrained("openai/clip-vit-base-patch32")
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32", cache_dir=data_dir)
+tokenizer = CLIPTokenizerFast.from_pretrained("openai/clip-vit-base-patch32", cache_dir=data_dir)
 
 
 image_id, image_path, label = dataset.__getitem__(int(csv_index))
