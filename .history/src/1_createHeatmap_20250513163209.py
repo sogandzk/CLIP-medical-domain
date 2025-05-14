@@ -4,11 +4,9 @@ import os
 import sys
 import random
 import pickle
-import math
 import numpy as np
 import pandas as pd
 from PIL import Image
-
 
 import torch
 from torch.utils.data import Dataset
@@ -70,32 +68,22 @@ def bbox_to_mask(bbox, frame_size):
     return mask
 
 def rotate_image(image, degree):
-    assert degree >= 0 and degree < 45
     rotated_image = image.rotate(degree, expand=True)
     return rotated_image
 
 def crop_image(image, degree):
-    assert degree >= 0 and degree < 45
-    w, h = image.size
-    assert w == h
-    sin = math.sin(degree*math.pi/180)
-    cos = math.cos(degree*math.pi/180)
-    a = w/(cos+sin)
-    crp_image = image.crop((a*sin, a*sin, a*cos, a*cos))
-    return crp_image
+    return 0
 
 
 
-print("len(sys.argv)",len(sys.argv))
-assert (len(sys.argv)-1) == 5
+
+
+assert (len(sys.argv)-1) == 3
 data_dir = sys.argv[1]
 csv_index = sys.argv[2]
 output_dir = sys.argv[3]
 rotation_degree = sys.argv[4]
-crop = sys.argv[5]
-
-
-rotation_degree = int(rotation_degree)
+crop = sys.arg[5]
 
 
 dataset = NIHSingleLabelBBoxDataset(
@@ -123,16 +111,19 @@ image = Image.open(image_path).convert('RGB')
 bbox_mask = bbox_to_mask(bbox, image.size)
 bbox_mask_image = Image.fromarray(bbox_mask, mode='L')
 
-if rotation_degree != 0:
+if int(rotation_degree) != 0:
     image = rotate_image(image, rotation_degree)
     bbox_mask_image = rotate_image(bbox_mask_image, rotation_degree)
+
     if int(crop) == 1:
         image = crop_image(image,rotation_degree)
-        bbox_mask_image = crop_image(bbox_mask_image,rotation_degree)
+        image = crop_image(image,rotation_degree)
 
 
-vmap_array = []
-for rep in range(3):
+
+
+output = []
+for rep in range(2):
     print("repeat "+str(rep))
     vmap = get_map(model=model, 
                    processor=processor, 
@@ -143,17 +134,11 @@ for rep in range(3):
                    vbeta=1, 
                    vvar=1, 
                    vlayer=9)
-    vmap_array.append(vmap)
-vmap_array = np.stack(vmap_array)
+    output.append(vmap)
+output = np.stack(output)
 
-
-vmap_dims = vmap_array.shape[1:]
-bbox_mask_image = bbox_mask_image.resize(vmap_dims, resample=Image.LANCZOS)
-bbox_mask = np.array(bbox_mask_image)
-
-output = {'vmap_array': vmap_array, 'bbox_mask': bbox_mask, 'image': image}
-
-output_path = output_dir + '/' + image_id + "-rot-" +str(rotation_degree) + '-crp-' + crop +".pkl"
+print("save output")
+output_path = output_dir + '/' + image_id + '_org_attrMap.pkl'
 with open(output_path, "wb") as f:
     pickle.dump(output, f)
 

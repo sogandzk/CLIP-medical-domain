@@ -82,7 +82,6 @@ def crop_image(image, degree):
     cos = math.cos(degree*math.pi/180)
     a = w/(cos+sin)
     crp_image = image.crop((a*sin, a*sin, a*cos, a*cos))
-    return crp_image
 
 
 

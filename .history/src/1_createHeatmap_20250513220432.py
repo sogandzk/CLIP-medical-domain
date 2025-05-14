@@ -4,11 +4,9 @@ import os
 import sys
 import random
 import pickle
-import math
 import numpy as np
 import pandas as pd
 from PIL import Image
-
 
 import torch
 from torch.utils.data import Dataset
@@ -70,20 +68,11 @@ def bbox_to_mask(bbox, frame_size):
     return mask
 
 def rotate_image(image, degree):
-    assert degree >= 0 and degree < 45
     rotated_image = image.rotate(degree, expand=True)
     return rotated_image
 
 def crop_image(image, degree):
-    assert degree >= 0 and degree < 45
-    w, h = image.size
-    assert w == h
-    sin = math.sin(degree*math.pi/180)
-    cos = math.cos(degree*math.pi/180)
-    a = w/(cos+sin)
-    crp_image = image.crop((a*sin, a*sin, a*cos, a*cos))
-    return crp_image
-
+    return 0
 
 
 print("len(sys.argv)",len(sys.argv))
@@ -151,9 +140,15 @@ vmap_dims = vmap_array.shape[1:]
 bbox_mask_image = bbox_mask_image.resize(vmap_dims, resample=Image.LANCZOS)
 bbox_mask = np.array(bbox_mask_image)
 
-output = {'vmap_array': vmap_array, 'bbox_mask': bbox_mask, 'image': image}
 
 output_path = output_dir + '/' + image_id + "-rot-" +str(rotation_degree) + '-crp-' + crop +".pkl"
 with open(output_path, "wb") as f:
-    pickle.dump(output, f)
+    pickle.dump(vmap_array, f)
+
+
+
+print("save output")
+output_path = output_dir + '/' + image_id + "-" +str(rotation_degree) + '-crop' + crop +"-"+ 'bboxmask.pkl'
+with open(output_path, "wb") as f:
+    pickle.dump(bbox_mask_image, f)
 

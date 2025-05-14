@@ -70,20 +70,23 @@ def bbox_to_mask(bbox, frame_size):
     return mask
 
 def rotate_image(image, degree):
-    assert degree >= 0 and degree < 45
     rotated_image = image.rotate(degree, expand=True)
     return rotated_image
 
 def crop_image(image, degree):
-    assert degree >= 0 and degree < 45
     w, h = image.size
     assert w == h
-    sin = math.sin(degree*math.pi/180)
-    cos = math.cos(degree*math.pi/180)
-    a = w/(cos+sin)
-    crp_image = image.crop((a*sin, a*sin, a*cos, a*cos))
-    return crp_image
 
+
+    a = 1025
+    t = 10
+    sin_t = math.sin(t*math.pi/180)
+    cos_t = math.cos(t*math.pi/180)
+    L = a*(cos_t+sin_t)
+    d = a*(cos_t-sin_t)
+
+    crp_rot_image = image.rotate(t, expand=True, fillcolor=(0, 0, 0)).crop((L/2-d/2, L/2-d/2, L/2+d/2, L/2+d/2))
+    vmap = plot_transformation(med_model1, crp_rot_image , text, vbeta = 1, vvar=1, vlayer=9, tbeta=1, tvar=1, tlayer=7)
 
 
 print("len(sys.argv)",len(sys.argv))

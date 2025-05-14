@@ -4,11 +4,9 @@ import os
 import sys
 import random
 import pickle
-import math
 import numpy as np
 import pandas as pd
 from PIL import Image
-
 
 import torch
 from torch.utils.data import Dataset
@@ -70,20 +68,11 @@ def bbox_to_mask(bbox, frame_size):
     return mask
 
 def rotate_image(image, degree):
-    assert degree >= 0 and degree < 45
     rotated_image = image.rotate(degree, expand=True)
     return rotated_image
 
 def crop_image(image, degree):
-    assert degree >= 0 and degree < 45
-    w, h = image.size
-    assert w == h
-    sin = math.sin(degree*math.pi/180)
-    cos = math.cos(degree*math.pi/180)
-    a = w/(cos+sin)
-    crp_image = image.crop((a*sin, a*sin, a*cos, a*cos))
-    return crp_image
-
+    return 0
 
 
 print("len(sys.argv)",len(sys.argv))
@@ -131,29 +120,50 @@ if rotation_degree != 0:
         bbox_mask_image = crop_image(bbox_mask_image,rotation_degree)
 
 
-vmap_array = []
-for rep in range(3):
-    print("repeat "+str(rep))
-    vmap = get_map(model=model, 
-                   processor=processor, 
-                   tokenizer=tokenizer, 
-                   device=device, 
-                   image=image, 
-                   text=text, 
-                   vbeta=1, 
-                   vvar=1, 
-                   vlayer=9)
-    vmap_array.append(vmap)
-vmap_array = np.stack(vmap_array)
 
 
-vmap_dims = vmap_array.shape[1:]
-bbox_mask_image = bbox_mask_image.resize(vmap_dims, resample=Image.LANCZOS)
-bbox_mask = np.array(bbox_mask_image)
+# output = []
+# for rep in range(2):
+#     print("repeat "+str(rep))
+#     vmap = get_map(model=model, 
+#                    processor=processor, 
+#                    tokenizer=tokenizer, 
+#                    device=device, 
+#                    image=image, 
+#                    text=text, 
+#                    vbeta=1, 
+#                    vvar=1, 
+#                    vlayer=9)
+#     output.append(vmap)
+# output = np.stack(output)
 
-output = {'vmap_array': vmap_array, 'bbox_mask': bbox_mask, 'image': image}
+# print("save output")
+# output_path = output_dir + '/' + image_id + '_org_attrMap.pkl'
+# with open(output_path, "wb") as f:
+#     pickle.dump(output, f)
+        
 
-output_path = output_dir + '/' + image_id + "-rot-" +str(rotation_degree) + '-crp-' + crop +".pkl"
+
+bbox_mask_image = bbox_mask_image.resize((224, 224), resample=Image.BICUBIC)
+
+import matplotlib.pyplot as plt
+
+# Plot
+import matplotlib.pyplot as plt
+
+plt.imshow(image, cmap='gray')  # if grayscale
+plt.axis('off')
+plt.show()
+
+
+
+print("save output")
+output_path = output_dir + '/' + image_id + str(rotation_degree) + ' crop:' + crop + 'bboxmask.pkl'
 with open(output_path, "wb") as f:
-    pickle.dump(output, f)
+    pickle.dump(image, f)
+
+
+output_path = output_dir + '/' + image_id + str(rotation_degree) + ' crop:' + crop + 'attrMap.pkl'
+with open(output_path, "wb") as f:
+    pickle.dump(bbox_mask_image, f)
 
