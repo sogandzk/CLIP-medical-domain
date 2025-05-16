@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
-
 import torch
 from torch.utils.data import Dataset
 import clip
@@ -86,7 +85,7 @@ def crop_image(image, degree):
 print("len(sys.argv)",len(sys.argv))
 assert (len(sys.argv)-1) == 5
 data_dir = sys.argv[1]
-csv_index = sys.argv[2]
+job_id = sys.argv[2]
 output_dir = sys.argv[3]
 rotation_degree = sys.argv[4]
 crop = sys.argv[5]
@@ -111,46 +110,47 @@ processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32", cache_
 tokenizer = CLIPTokenizerFast.from_pretrained("openai/clip-vit-base-patch32", cache_dir=data_dir)
 
 
-image_id, image_path, label, bbox = dataset[int(csv_index)]
-text = 'findings include: 1. ' + label
-image = Image.open(image_path).convert('RGB')
+for csv_index in range(20(job_id), (job_id *20)+19)
+    image_id, image_path, label, bbox = dataset[int(csv_index)]
+    text = 'findings include: 1. ' + label
+    image = Image.open(image_path).convert('RGB')
 
-bbox_mask = bbox_to_mask(bbox, image.size)
-bbox_mask_image = Image.fromarray(bbox_mask, mode='L')
+    bbox_mask = bbox_to_mask(bbox, image.size)
+    bbox_mask_image = Image.fromarray(bbox_mask, mode='L')
 
-if rotation_degree != 0:
-    image = rotate_image(image, rotation_degree)
-    bbox_mask_image = rotate_image(bbox_mask_image, rotation_degree)
-    if int(crop) == 1:
-        image = crop_image(image,rotation_degree)
-        bbox_mask_image = crop_image(bbox_mask_image,rotation_degree)
-
-
-vmap_array = []
-for rep in range(3):
-    print("repeat "+str(rep))
-    vmap = get_map(model=model, 
-                   processor=processor, 
-                   tokenizer=tokenizer, 
-                   device=device, 
-                   image=image, 
-                   text=text, 
-                   vbeta=1, 
-                   vvar=1, 
-                   vlayer=9)
-    vmap_array.append(vmap)
-vmap_array = np.stack(vmap_array)
+    if rotation_degree != 0:
+        image = rotate_image(image, rotation_degree)
+        bbox_mask_image = rotate_image(bbox_mask_image, rotation_degree)
+        if int(crop) == 1:
+            image = crop_image(image,rotation_degree)
+            bbox_mask_image = crop_image(bbox_mask_image,rotation_degree)
 
 
-vmap_dims = vmap_array.shape[1:]
-bbox_mask_image = bbox_mask_image.resize(vmap_dims, resample=Image.LANCZOS)
-bbox_mask = np.array(bbox_mask_image)
+    vmap_array = []
+    for rep in range(3):
+        print("repeat "+str(rep))
+        vmap = get_map(model=model, 
+                    processor=processor, 
+                    tokenizer=tokenizer, 
+                    device=device, 
+                    image=image, 
+                    text=text, 
+                    vbeta=1, 
+                    vvar=1, 
+                    vlayer=9)
+        vmap_array.append(vmap)
+    vmap_array = np.stack(vmap_array)
 
-output = {'vmap_array': vmap_array, 'bbox_mask': bbox_mask, 'image': image}
 
-output_path = output_dir + '/' + image_id + "-rot-" +str(rotation_degree) + '-crp-' + crop +".pkl"
-with open(output_path, "wb") as f:
-    pickle.dump(output, f)
+    vmap_dims = vmap_array.shape[1:]
+    bbox_mask_image = bbox_mask_image.resize(vmap_dims, resample=Image.LANCZOS)
+    bbox_mask = np.array(bbox_mask_image)
+
+    output = {'vmap_array': vmap_array, 'bbox_mask': bbox_mask, 'image': image}
+
+    output_path = output_dir + '/' + image_id + "-rot-" +str(rotation_degree) + '-crp-' + crop +".pkl"
+    with open(output_path, "wb") as f:
+        pickle.dump(output, f)
 
 
 
