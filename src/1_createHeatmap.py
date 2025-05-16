@@ -30,7 +30,6 @@ def set_seed(seed):
 
 set_seed(1234)
 
-
 class NIHSingleLabelBBoxDataset(Dataset):
     def __init__(self, csv_path, images_dir):
         self.df = pd.read_csv(csv_path)
@@ -61,7 +60,6 @@ def get_map(model, processor, tokenizer, device, image, text, vbeta, vvar, vlaye
     return vmap
 
 
-
 def bbox_to_mask(bbox, frame_size):
     mask = np.zeros(frame_size, dtype=np.uint8)
     x1, x2 = int(bbox[0]), int(bbox[0] + bbox[2])
@@ -85,7 +83,6 @@ def crop_image(image, degree):
     return crp_image
 
 
-
 print("len(sys.argv)",len(sys.argv))
 assert (len(sys.argv)-1) == 5
 data_dir = sys.argv[1]
@@ -94,9 +91,7 @@ output_dir = sys.argv[3]
 rotation_degree = sys.argv[4]
 crop = sys.argv[5]
 
-
 rotation_degree = int(rotation_degree)
-
 
 dataset = NIHSingleLabelBBoxDataset(
     csv_path = data_dir + '/BBox_List_2017.csv',
@@ -156,4 +151,10 @@ output = {'vmap_array': vmap_array, 'bbox_mask': bbox_mask, 'image': image}
 output_path = output_dir + '/' + image_id + "-rot-" +str(rotation_degree) + '-crp-' + crop +".pkl"
 with open(output_path, "wb") as f:
     pickle.dump(output, f)
+
+
+
+
+
+
 
