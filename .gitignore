@@ -1,5 +1,8 @@
 .DS_Store
 .history
 .vscode
+**/__pycache__/
 data/
 out/
+jobs/
+
