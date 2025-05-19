@@ -73,12 +73,15 @@ for vmap in vmap_array:
     resualt_list.append(resualt_dict)
 
 
+print("data_path",data_path)
+print("out_dir_result",out_dir_result)
 
-name_parts = data_path.split("/")[1].split(".")[0]
-name_parts_without_extension = name_parts
+name_parts = data_path.split("/")[-1].split(".")[0]
+
+print("name_parts",name_parts)
 
 
-output_path = out_dir_result + '/' + name_parts_without_extension + "-result.pkl"
+output_path = out_dir_result + '/' + name_parts + "-result.pkl"
 with open(output_path, "wb") as f:
     pickle.dump(resualt_list, f)
 
