@@ -109,8 +109,14 @@ model = ClipWrapper(model)
 processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32", cache_dir=data_dir)
 tokenizer = CLIPTokenizerFast.from_pretrained("openai/clip-vit-base-patch32", cache_dir=data_dir)
 
+N = 20
 
-for csv_index in range(20(job_id), (job_id *20)+19)
+for csv_index in range(N*job_id,  (N+1)*job_id-1):
+
+    print('====================================================')
+    print('csv_index: '+str(csv_index))
+    print('====================================================')
+    
     image_id, image_path, label, bbox = dataset[int(csv_index)]
     text = 'findings include: 1. ' + label
     image = Image.open(image_path).convert('RGB')
@@ -125,9 +131,8 @@ for csv_index in range(20(job_id), (job_id *20)+19)
             image = crop_image(image,rotation_degree)
             bbox_mask_image = crop_image(bbox_mask_image,rotation_degree)
 
-
     vmap_array = []
-    for rep in range(3):
+    for rep in range(10):
         print("repeat "+str(rep))
         vmap = get_map(model=model, 
                     processor=processor, 
