@@ -111,6 +111,7 @@ tokenizer = CLIPTokenizerFast.from_pretrained("openai/clip-vit-base-patch32", ca
 
 N = 10
 
+job_id = int(job_id)
 start = N*job_id
 end = (N+1)*job_id-1
 end = min(end, len(dataset))
