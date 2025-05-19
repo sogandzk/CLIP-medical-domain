@@ -109,9 +109,13 @@ model = ClipWrapper(model)
 processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32", cache_dir=data_dir)
 tokenizer = CLIPTokenizerFast.from_pretrained("openai/clip-vit-base-patch32", cache_dir=data_dir)
 
-N = 2
+N = 10
 
-for csv_index in range(N*int(job_id),  N*(int(job_id)+1)):
+start = N*job_id
+end = (N+1)*job_id-1
+end = min(end, len(dataset))
+
+for csv_index in range(start, end+1):
 
     print('====================================================')
     print('csv_index: '+str(csv_index))
@@ -132,7 +136,7 @@ for csv_index in range(N*int(job_id),  N*(int(job_id)+1)):
             bbox_mask_image = crop_image(bbox_mask_image,rotation_degree)
 
     vmap_array = []
-    for rep in range(3):
+    for rep in range(10):
         print('====================================================')
         print("repeat "+str(rep))
         print('====================================================')
@@ -160,7 +164,7 @@ for csv_index in range(N*int(job_id),  N*(int(job_id)+1)):
         pickle.dump(output, f)
 
 
-
+print('Done')
 
 
 
