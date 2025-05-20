@@ -113,7 +113,7 @@ N = 10
 
 job_id = int(job_id)
 start = N*job_id
-end = (N+1)*job_id-1
+end = N*(job_id+1)-1
 end = min(end, len(dataset))
 
 for csv_index in range(start, end+1):
@@ -137,7 +137,7 @@ for csv_index in range(start, end+1):
             bbox_mask_image = crop_image(bbox_mask_image,rotation_degree)
 
     vmap_array = []
-    for rep in range(10):
+    for rep in range(20):
         print('====================================================')
         print("repeat "+str(rep))
         print('====================================================')
