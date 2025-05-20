@@ -5,7 +5,7 @@ import sys
 import pickle
 import matplotlib.cm as cm
 from PIL import Image, ImageDraw
-import cv2
+from skimage import measure
 import numpy as np
 
 
@@ -23,31 +23,30 @@ bbox_mask = data["bbox_mask"]
 image = data["image"]
 
 
-def draw_img(heatmap, bbox_mask,image):
-
+def draw_img(heatmap, bbox_mask, image):
+    # Convert heatmap to RGBA
     colormap = cm.get_cmap('jet')
-    heatmap_rgba = colormap(heatmap)  # shape (H, W, 4), float32 in [0,1]
-    heatmap_rgba[..., 3] = 0.5  # set alpha channel to 0.5 for transparency
+    heatmap_rgba = colormap(heatmap)
+    heatmap_rgba[..., 3] = 0.5
 
     heatmap_uint8 = (heatmap_rgba * 255).astype(np.uint8)
-
     heatmap_pil = Image.fromarray(heatmap_uint8, mode="RGBA")
 
     overlay = image.resize(heatmap.shape, resample=Image.LANCZOS).convert("RGBA")
     composite = Image.alpha_composite(overlay, heatmap_pil)
 
-    mask_for_cv = (bbox_mask * 255).astype(np.uint8)
-
-    contours, _ = cv2.findContours(mask_for_cv, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
     composite_draw = composite.copy()
     draw = ImageDraw.Draw(composite_draw)
 
-    for cnt in contours:
-        points = [(int(p[0][0]), int(p[0][1])) for p in cnt]
-        draw.line(points + [points[0]], fill=(255, 0, 0, 255), width=1)
+    # Find contours using skimage
+    contours = measure.find_contours(bbox_mask, level=0.5)
 
-    print(type(composite_draw))
+    for contour in contours:
+        # contour is a Nx2 array of (row, col), so we convert to (x, y)
+        points = [(int(col), int(row)) for row, col in contour]
+        if len(points) > 1:
+            draw.line(points + [points[0]], fill=(255, 0, 0, 255), width=1)
+
     return composite_draw
 
 
